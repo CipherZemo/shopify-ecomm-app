@@ -80,10 +80,6 @@ The application includes Admin and User roles, real-time features, secure paymen
 - Multi-vendor support
 - Mobile app
 
----
 
-## 🧠 Learning Goal
-
-This project is designed not just to *work*, but to **teach real backend and frontend architecture** used in production systems.
 
 
