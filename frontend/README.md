@@ -52,18 +52,14 @@ npm run dev
 ---
 
 ## 🎨 Styling
-Tailwind CSS v3
-
-Utility-first approach
-
-Mobile-first responsive design
+- Tailwind CSS v3
+- Utility-first approach
+- Mobile-first responsive design
 
 
 ---
 
 ## 🔗 API Integration
-Axios for HTTP requests
-
-JWT stored securely
-
-Role-based UI rendering
+- Axios for HTTP requests
+- JWT stored securely
+- Role-based UI rendering
