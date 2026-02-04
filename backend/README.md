@@ -59,7 +59,6 @@ npm run dev
 ---
 
 ## 🧪 API Testing
-
 Use Postman or Thunder Client to test APIs.
 
 Auth Endpoints:-
