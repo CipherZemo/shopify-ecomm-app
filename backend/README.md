@@ -20,6 +20,7 @@ The backend is designed with scalability, security, and maintainability in mind.
 
 ## 📂 Folder Structure
 
+```bash
 src/
 ├── config # Database & environment configuration
 ├── controllers # Business logic
@@ -29,6 +30,7 @@ src/
 ├── services # External services logic
 ├── sockets # Real-time communication
 └── server.js # App entry point
+```
 
 ---
 
