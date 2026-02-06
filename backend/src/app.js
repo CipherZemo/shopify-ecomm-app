@@ -22,14 +22,12 @@ app.use("/api/orders", require("./routes/orderRoutes"));
 app.use("/api/payments", require("./routes/paymentRoutes"));
 
 const server = http.createServer(app);
-
 // socket setup
 const io = new Server(server, {
   cors: {
     origin: "*", // later restrict to frontend URL
   },
 });
-
 require("./sockets")(io);
 
 const PORT = process.env.PORT || 5000;
