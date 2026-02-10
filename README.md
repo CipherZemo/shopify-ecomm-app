@@ -80,6 +80,3 @@ The application includes Admin and User roles, real-time features, secure paymen
 - Multi-vendor support
 - Mobile app
 
-
-
-
