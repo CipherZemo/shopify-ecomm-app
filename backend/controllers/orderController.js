@@ -1,6 +1,7 @@
 const Order = require("../models/Order");
 const Cart = require("../models/Cart");
 const socketUtil = require("../utils/socket");
+const Product = require("../models/Product");
 
 // create order from cart
 exports.createOrder = async (req, res) => {
@@ -54,6 +55,9 @@ const orderItems = cart.items.map((item) => {
 //cancel order
 exports.cancelOrder = async (req, res) => {
   const order = await Order.findById(req.params.id);
+      if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
   
   if (order.user.toString() !== req.user._id.toString()) {
     return res.status(403).json({ message: 'Not authorized' });
