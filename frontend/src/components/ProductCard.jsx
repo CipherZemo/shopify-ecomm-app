@@ -10,7 +10,7 @@ function ProductCard({ product }) {
       <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-md transition duration-300">
 
         {/* Image */}
-        <div className="relative bg-gray-50 h-56 overflow-hidden">
+        <div className="relative bg-gray-200 h-56 overflow-hidden">
           {product.images && product.images.length > 0 ? (
             <img
               src={`http://localhost:5000${product.images[0]}`}
