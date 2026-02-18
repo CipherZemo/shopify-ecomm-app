@@ -13,10 +13,10 @@ function HomePage() {
   }, [dispatch]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-200">
 
       {/* Hero Section */}
-      <section className="bg-white">
+      <section className="bg-slate-100">
         <div className="max-w-6xl mx-auto px-6 py-20 flex flex-col items-center text-center">
           <span className="text-xs font-medium tracking-widest text-gray-400 uppercase mb-4">
             New Arrivals Available
