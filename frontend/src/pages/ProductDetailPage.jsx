@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchProductById } from '../store/slices/productSlice';
 import { addToCart } from '../store/slices/cartSlice';
-import { addToWishlist, removeFromWishlist } from '../store/slices/wishlistSlice';
+import { addToWishlist, removeFromWishlist, fetchWishlist } from '../store/slices/wishlistSlice';
 
 function ProductDetailPage() {
   const { id } = useParams();
@@ -13,24 +13,38 @@ function ProductDetailPage() {
   const { selectedProduct: product, loading } = useSelector((state) => state.products);
   const { token } = useSelector((state) => state.auth);
   const { loading: cartLoading, successMessage } = useSelector((state) => state.cart);
-  const { products: wishlistProducts } = useSelector((state) => state.wishlist);
+  const { products: wishlistProducts, successMessage: wishlistMessage } = useSelector((state) => state.wishlist);
 
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [showGoToCart, setShowGoToCart] = useState(false); // ⭐ NEW
 
   const isInWishlist = wishlistProducts.some((p) => p._id === product?._id);
 
   useEffect(() => {
     dispatch(fetchProductById(id));
-  }, [id, dispatch]);
+    if (token) {
+      dispatch(fetchWishlist());
+    }
+  }, [id, dispatch, token]);
 
   useEffect(() => {
     if (successMessage) {
+      setShowGoToCart(true); // ⭐ Show Go to Cart button
       setTimeout(() => {
         dispatch({ type: 'cart/clearMessages' });
+        setShowGoToCart(false); // ⭐ Hide after 5 seconds
+      }, 5000);
+    }
+  }, [successMessage, dispatch]);
+
+  useEffect(() => {
+    if (wishlistMessage) {
+      setTimeout(() => {
+        dispatch({ type: 'wishlist/clearMessages' });
       }, 2000);
     }
-  }, [successMessage]);
+  }, [wishlistMessage, dispatch]);
 
   const handleAddToCart = () => {
     if (!token) {
@@ -86,7 +100,7 @@ function ProductDetailPage() {
     : product.price;
 
   return (
-    <div className="min-h-screen bg-gray-200">
+    <div className="min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto px-6 py-8">
 
         {/* Breadcrumb */}
@@ -104,7 +118,7 @@ function ProductDetailPage() {
             {/* Image Gallery */}
             <div>
               {/* Main Image */}
-              <div className="bg-gray-200 rounded-xl overflow-hidden mb-4 h-96 flex items-center justify-center">
+              <div className="bg-gray-50 rounded-xl overflow-hidden mb-4 h-96 flex items-center justify-center">
                 {product.images && product.images.length > 0 ? (
                   <img
                     src={`http://localhost:5000${product.images[selectedImage]}`}
@@ -151,6 +165,7 @@ function ProductDetailPage() {
                 <button
                   onClick={handleWishlist}
                   className="text-2xl transition hover:scale-110"
+                  title={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
                 >
                   {isInWishlist ? '❤️' : '🤍'}
                 </button>
@@ -223,29 +238,56 @@ function ProductDetailPage() {
                 </div>
               )}
 
-              {/* Success Message */}
+              {/* Success Messages */}
               {successMessage && (
                 <div className="mb-4 bg-green-50 border border-green-200 text-green-600 text-sm rounded-lg px-4 py-2">
-                  {successMessage}
+                  ✓ {successMessage}
+                </div>
+              )}
+              {wishlistMessage && (
+                <div className="mb-4 bg-blue-50 border border-blue-200 text-blue-600 text-sm rounded-lg px-4 py-2">
+                  ✓ {wishlistMessage}
                 </div>
               )}
 
               {/* Action Buttons */}
-              <div className="flex gap-3 mt-auto">
-                <button
-                  onClick={handleAddToCart}
-                  disabled={product.stock === 0 || cartLoading}
-                  className="flex-1 bg-gray-100 text-gray-900 py-3 rounded-xl text-sm font-medium hover:bg-gray-200 transition disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  {cartLoading ? 'Adding...' : 'Add to Cart'}
-                </button>
-                <button
-                  onClick={handleBuyNow}
-                  disabled={product.stock === 0 || cartLoading}
-                  className="flex-1 bg-gray-900 text-white py-3 rounded-xl text-sm font-medium hover:bg-gray-700 transition disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  Buy Now
-                </button>
+              <div className="space-y-3 mt-auto">
+                {/* ⭐ Show either normal buttons or "Go to Cart" */}
+                {!showGoToCart ? (
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleAddToCart}
+                      disabled={product.stock === 0 || cartLoading}
+                      className="flex-1 bg-gray-100 text-gray-900 py-3 rounded-xl text-sm font-medium hover:bg-gray-200 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      {cartLoading ? 'Adding...' : 'Add to Cart'}
+                    </button>
+                    <button
+                      onClick={handleBuyNow}
+                      disabled={product.stock === 0 || cartLoading}
+                      className="flex-1 bg-gray-900 text-white py-3 rounded-xl text-sm font-medium hover:bg-gray-700 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      Buy Now
+                    </button>
+                  </div>
+                ) : (
+                  // ⭐ Go to Cart Button (appears after adding to cart)
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleAddToCart}
+                      disabled={product.stock === 0 || cartLoading}
+                      className="flex-1 bg-gray-100 text-gray-900 py-3 rounded-xl text-sm font-medium hover:bg-gray-200 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      Add More
+                    </button>
+                    <button
+                      onClick={() => navigate('/cart')}
+                      className="flex-1 bg-green-600 text-white py-3 rounded-xl text-sm font-medium hover:bg-green-700 transition flex items-center justify-center gap-2"
+                    >
+                      Go to Cart →
+                    </button>
+                  </div>
+                )}
               </div>
 
               {!token && (
