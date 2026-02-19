@@ -18,9 +18,10 @@ exports.addToCart = async (req, res) => {
     return res.status(404).json({ message: "Product not found" });
   }
 
+  // Check stock
   if (quantity > product.stock) {
-    return res.status(400).json({
-      message: `Only ${product.stock} items available in stock`
+    return res.status(400).json({ 
+      message: `Only ${product.stock} items available in stock` 
     });
   }
 
@@ -45,6 +46,9 @@ exports.addToCart = async (req, res) => {
     await cart.save();
   }
 
+  // ⭐ IMPORTANT: Populate before returning
+  await cart.populate("items.product");
+
   res.json(cart);
 };
 
@@ -62,5 +66,9 @@ exports.removeFromCart = async (req, res) => {
   );
 
   await cart.save();
+  
+  // ⭐ IMPORTANT: Populate before returning
+  await cart.populate("items.product");
+  
   res.json(cart);
 };
