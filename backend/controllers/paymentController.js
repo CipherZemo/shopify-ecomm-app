@@ -56,7 +56,7 @@ exports.createRazorpayOrder = async (req, res) => {
       razorpayOrderId: razorpayOrder.id,
       amount: razorpayOrder.amount,
       currency: razorpayOrder.currency,
-      keyId: process.env.RAZORPAY_KEY_ID, // Frontend needs this
+      razorpayKeyId: process.env.RAZORPAY_KEY_ID, // Frontend needs this
       payment: payment,
     });
   } catch (error) {
