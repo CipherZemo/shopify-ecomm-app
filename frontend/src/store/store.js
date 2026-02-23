@@ -3,6 +3,8 @@ import authReducer from './slices/authSlice';
 import productReducer from './slices/productSlice';
 import cartReducer from './slices/cartSlice';
 import wishlistReducer from './slices/wishlistSlice';
+import orderReducer from './slices/orderSlice';
+import paymentReducer from './slices/paymentSlice';
 
 const store = configureStore({
   reducer: {
@@ -10,6 +12,8 @@ const store = configureStore({
     products: productReducer,
     cart: cartReducer,
     wishlist: wishlistReducer,
+    orders: orderReducer,
+    payment: paymentReducer,
   },
 });
 
