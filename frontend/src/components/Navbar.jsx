@@ -43,6 +43,15 @@ function Navbar() {
           Products
         </Link>
 
+        {token && (
+          <Link
+            to="/orders"
+            className="text-sm text-gray-600 hover:text-gray-900 font-medium transition"
+          >
+            Orders
+          </Link>
+        )}
+
         {token ? (
           <>
             <Link
