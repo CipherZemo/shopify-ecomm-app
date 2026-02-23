@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchProductById } from '../store/slices/productSlice';
-import { addToCart } from '../store/slices/cartSlice';
+import { addToCart, clearMessages } from '../store/slices/cartSlice';
 import { addToWishlist, removeFromWishlist, fetchWishlist } from '../store/slices/wishlistSlice';
 
 function ProductDetailPage() {
@@ -26,16 +26,26 @@ function ProductDetailPage() {
     if (token) {
       dispatch(fetchWishlist());
     }
+    dispatch(clearMessages()); 
+    setShowGoToCart(false); //  Clear cart messages when component mounts and  Reset "Go to Cart" button state
+
+    return () => {
+      dispatch(clearMessages());
+      setShowGoToCart(false);    //  Also clear on unmount
+    };
   }, [id, dispatch, token]);
 
   useEffect(() => {
-    if (successMessage) {
+    if (successMessage && successMessage.includes('Added to cart')) {
       setShowGoToCart(true); // ⭐ Show Go to Cart button
       setTimeout(() => {
         dispatch({ type: 'cart/clearMessages' });
         setShowGoToCart(false); // ⭐ Hide after 5 seconds
       }, 5000);
-    }
+    }else if (successMessage) {
+    // For other messages (like "Removed from cart"), just clear them
+    dispatch(clearMessages());
+  }
   }, [successMessage, dispatch]);
 
   useEffect(() => {
@@ -53,6 +63,10 @@ function ProductDetailPage() {
     }
     dispatch(addToCart({ productId: product._id, quantity }));
   };
+
+  const handleOtherProducts = () => {
+    navigate('/products');
+  }
 
   const handleBuyNow = async () => {
     if (!token) {
@@ -274,11 +288,11 @@ function ProductDetailPage() {
                   // ⭐ Go to Cart Button (appears after adding to cart)
                   <div className="flex gap-3">
                     <button
-                      onClick={handleAddToCart}
+                      onClick={handleOtherProducts}
                       disabled={product.stock === 0 || cartLoading}
                       className="flex-1 bg-gray-100 text-gray-900 py-3 rounded-xl text-sm font-medium hover:bg-gray-200 transition disabled:opacity-40 disabled:cursor-not-allowed"
                     >
-                      Add More
+                      View other products
                     </button>
                     <button
                       onClick={() => navigate('/cart')}
