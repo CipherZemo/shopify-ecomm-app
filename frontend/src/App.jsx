@@ -1,7 +1,8 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { useSelector, useDispatch,  } from "react-redux";
 import { useEffect } from "react";
-import { getProfile } from "./store/slices/authSlice";
+import { getProfile,logout } from "./store/slices/authSlice";
+import { initSocket, disconnectSocket } from './utils/socket';
 import Navbar from "./components/Navbar";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -22,6 +23,7 @@ import AdminProductsPage from './pages/admin/AdminProductsPage';
 import AdminProductFormPage from './pages/admin/AdminProductFormPage';
 import AdminOrdersPage from './pages/admin/AdminOrdersPage';
 import AdminUsersPage from './pages/admin/AdminUsersPage';
+import ChatWidget from './components/ChatWidget';
 
 const ProtectedRoute = ({ children }) => {
   const { token } = useSelector((state) => state.auth);
@@ -33,20 +35,43 @@ const AuthRoute = ({ children }) => {
   return !token ? children : <Navigate to="/" />;
 };
 
-function App() {
+function AppContent() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { token,user } = useSelector((state) => state.auth);
 
-  // ⭐ Fetch user profile on app load if token exists
   useEffect(() => {
-    if (token) {
-      dispatch(getProfile());
+  if (token) {
+    dispatch(getProfile()).unwrap()    // Validate token by fetching profile
+      .then(() => {
+        console.log('✅ Token valid');        
+        const socket = initSocket(token);// Initialize socket for valid users
+        if (socket) {
+          socket.emit('join', JSON.parse(atob(token.split('.')[1])).id);
+        }
+      })
+      .catch((error) => {
+        console.log('🚨 Invalid token - logging out',error);
+        // Token is invalid, clear everything
+        dispatch(logout());
+        navigate('/login');
+      });
+  } else {
+    disconnectSocket();
+  }
+  
+  return () => {
+    // Cleanup socket on unmount only if logging out
+    if (!token) {
+      disconnectSocket();
     }
-  }, [token, dispatch]);
+  };
+}, [token, dispatch, navigate]);
 
   return (
-    <BrowserRouter>
+    <>
       {user?.role === 'admin' ? <AdminNavbar /> : <Navbar />}
+      <ChatWidget />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/products" element={<ProductsPage />} />
@@ -67,6 +92,15 @@ function App() {
         <Route path="/login" element={<AuthRoute><LoginPage /></AuthRoute>} />
         <Route path="/register" element={<AuthRoute><RegisterPage /></AuthRoute>} />
       </Routes>
+      </>
+  );
+}
+
+// Main App component
+function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
     </BrowserRouter>
   );
 }
