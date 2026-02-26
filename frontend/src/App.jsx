@@ -15,6 +15,13 @@ import PaymentPage from "./pages/PaymentPage";
 import PaymentSuccessPage from "./pages/PaymentSuccessPage";
 import PaymentFailedPage from "./pages/PaymentFailedPage";
 import OrdersPage from './pages/OrdersPage';
+import AdminRoute from './components/AdminRoute';
+import AdminNavbar from './components/AdminNavbar';
+import AdminDashboardPage from './pages/admin/AdminDashboardPage';
+import AdminProductsPage from './pages/admin/AdminProductsPage';
+import AdminProductFormPage from './pages/admin/AdminProductFormPage';
+import AdminOrdersPage from './pages/admin/AdminOrdersPage';
+import AdminUsersPage from './pages/admin/AdminUsersPage';
 
 const ProtectedRoute = ({ children }) => {
   const { token } = useSelector((state) => state.auth);
@@ -28,7 +35,7 @@ const AuthRoute = ({ children }) => {
 
 function App() {
   const dispatch = useDispatch();
-  const { token } = useSelector((state) => state.auth);
+  const { token,user } = useSelector((state) => state.auth);
 
   // ⭐ Fetch user profile on app load if token exists
   useEffect(() => {
@@ -39,7 +46,7 @@ function App() {
 
   return (
     <BrowserRouter>
-      <Navbar />
+      {user?.role === 'admin' ? <AdminNavbar /> : <Navbar />}
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/products" element={<ProductsPage />} />
@@ -51,6 +58,12 @@ function App() {
         <Route path="/payment-success" element={<ProtectedRoute><PaymentSuccessPage /></ProtectedRoute>} />
         <Route path="/payment-failed" element={<ProtectedRoute><PaymentFailedPage /></ProtectedRoute>} />
         <Route path="/orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
+        <Route path="/admin" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />
+        <Route path="/admin/products" element={<AdminRoute><AdminProductsPage /></AdminRoute>} />
+        <Route path="/admin/products/create" element={<AdminRoute><AdminProductFormPage /></AdminRoute>} />
+        <Route path="/admin/products/edit/:id" element={<AdminRoute><AdminProductFormPage /></AdminRoute>} />
+        <Route path="/admin/orders" element={<AdminRoute><AdminOrdersPage /></AdminRoute>} />
+        <Route path="/admin/users" element={<AdminRoute><AdminUsersPage /></AdminRoute>} />
         <Route path="/login" element={<AuthRoute><LoginPage /></AuthRoute>} />
         <Route path="/register" element={<AuthRoute><RegisterPage /></AuthRoute>} />
       </Routes>
