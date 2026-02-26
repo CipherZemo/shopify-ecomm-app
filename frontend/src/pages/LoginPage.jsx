@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { loginUser, clearError } from '../store/slices/authSlice';
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { loginUser, clearError } from "../store/slices/authSlice";
 
 function LoginPage() {
-  const [form, setForm] = useState({ email: '', password: '' });
+  const [form, setForm] = useState({ email: "", password: "" });
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { loading, error } = useSelector((state) => state.auth);
@@ -20,15 +20,15 @@ function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const result = await dispatch(loginUser(form));
-    if (result.meta.requestStatus === 'fulfilled') {
-      navigate('/');
+    if (result.meta.requestStatus === "fulfilled") {
+      const userRole = result.payload.user.role;
+      navigate(userRole === "admin" ? "/admin" : "/"); // Redirect admin to dashboard, users to home
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="bg-white w-full max-w-md rounded-2xl shadow-sm border border-gray-100 p-8">
-
         {/* Header */}
         <div className="mb-8 text-center">
           <h1 className="text-2xl font-bold text-gray-900">Welcome back</h1>
@@ -79,14 +79,17 @@ function LoginPage() {
             disabled={loading}
             className="w-full bg-gray-900 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
 
         {/* Footer */}
         <p className="text-center text-sm text-gray-500 mt-6">
-          Don't have an account?{' '}
-          <Link to="/register" className="text-gray-900 font-medium hover:underline">
+          Don't have an account?{" "}
+          <Link
+            to="/register"
+            className="text-gray-900 font-medium hover:underline"
+          >
             Register
           </Link>
         </p>
