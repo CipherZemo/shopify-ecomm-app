@@ -90,9 +90,16 @@ const authSlice = createSlice({
       // Get Profile
       .addCase(getProfile.fulfilled, (state, action) => {
         state.user = action.payload;
-      });
-  },
-});
+      })
+      // Invalid token - clear state
+      .addCase(getProfile.rejected, (state) => {
+        state.user = null;
+        state.token = null;
+        localStorage.removeItem('token');
+      })
+  }
+})
+
 
 export const { logout, clearError } = authSlice.actions;
 export default authSlice.reducer;
