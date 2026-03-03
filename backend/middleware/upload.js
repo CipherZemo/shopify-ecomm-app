@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 
 // Ensure upload directory exists
-const uploadDir = 'uploads/products';
+const uploadDir = '../uploads/products'; // the ./ is based on the loc where the file is running in terminal(here it is backend)
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
@@ -18,7 +18,9 @@ const storage = multer.diskStorage({
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     const ext = path.extname(file.originalname);
     const nameWithoutExt = path.basename(file.originalname, ext);
-    cb(null, nameWithoutExt + '-' + uniqueSuffix + ext);
+    const filename = nameWithoutExt + '-' + uniqueSuffix + ext;
+    console.log('💾 Generated filename:', filename); //  Debug log
+    cb(null, filename);
     
     // Example result: laptop-1708123456789-123456789.jpg
   }
