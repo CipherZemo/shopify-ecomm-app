@@ -1,12 +1,12 @@
-import { useState, useEffect, useRef } from 'react';
-import { useSelector } from 'react-redux';
-import { getSocket } from '../utils/socket';
+import { useState, useEffect, useRef } from "react";
+import { useSelector } from "react-redux";
+import { getSocket } from "../utils/socket";
 
 function ChatWidget() {
   const { token, user } = useSelector((state) => state.auth);
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
-  const [inputMessage, setInputMessage] = useState('');
+  const [inputMessage, setInputMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
 
@@ -17,20 +17,26 @@ function ChatWidget() {
     }
   }, [token, isOpen]);
 
-  // Socket listener for bot replies
+  // Socket listener for bot replies - Re-attach when socket changes
   useEffect(() => {
     if (!token) return;
 
     const socket = getSocket();
-    if (!socket) return;
+    if (!socket) {
+      console.log("⚠️ No socket available yet");
+      return;
+    }
+    // Remove any existing listener first
+    socket.off("chatReply");
 
-    socket.on('chatReply', ({ reply }) => {
-      console.log('🤖 Bot reply:', reply);
+    // Attach new listener
+    socket.on("chatReply", ({ reply }) => {
+      console.log("🤖 Bot reply received:", reply);
       setIsTyping(false);
       setMessages((prev) => [
         ...prev,
         {
-          sender: 'bot',
+          sender: "bot",
           message: reply,
           timestamp: new Date(),
         },
@@ -38,35 +44,36 @@ function ChatWidget() {
     });
 
     return () => {
+      console.log("🔌 Cleaning up chatReply listener");
       if (socket) {
-        socket.off('chatReply');
+        socket.off("chatReply");
       }
     };
-  }, [token]);
+  }, [token, isOpen]); // ⭐ Add isOpen dependency - re-attach when chat opens
 
   // Auto scroll to bottom
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const loadChatHistory = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/chat', {
+      const response = await fetch("http://localhost:5000/api/chat", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
       const data = await response.json();
-      
+
       const formattedMessages = data.map((msg) => ({
         sender: msg.sender,
         message: msg.message,
         timestamp: new Date(msg.createdAt),
       }));
-      
+
       setMessages(formattedMessages);
     } catch (error) {
-      console.error('Failed to load chat history:', error);
+      console.error("Failed to load chat history:", error);
     }
   };
 
@@ -74,31 +81,33 @@ function ChatWidget() {
     if (!inputMessage.trim() || !token) return;
 
     const socket = getSocket();
-    if (!socket) {
-      alert('Please login to use chat');
+    if (!socket || !socket.connected) {
+      alert("Connection lost. Please refresh the page.");
       return;
     }
 
+    console.log("📤 Sending message:", inputMessage);
+
     // Add user message to UI
     const userMessage = {
-      sender: 'user',
+      sender: "user",
       message: inputMessage,
       timestamp: new Date(),
     };
     setMessages((prev) => [...prev, userMessage]);
 
     // Send to backend via Socket.io
-    socket.emit('chatMessage', {
+    socket.emit("chatMessage", {
       user: { _id: user._id, name: user.name, email: user.email },
       message: inputMessage,
     });
 
-    setInputMessage('');
+    setInputMessage("");
     setIsTyping(true);
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
@@ -111,7 +120,6 @@ function ChatWidget() {
       {/* Chat Window */}
       {isOpen && (
         <div className="fixed bottom-24 right-6 w-96 h-[32rem] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col z-50 animate-slide-up">
-          
           {/* Header */}
           <div className="bg-gray-900 text-white px-6 py-4 rounded-t-2xl flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -137,31 +145,33 @@ function ChatWidget() {
               <div className="text-center text-gray-400 mt-8">
                 <p className="text-4xl mb-2">👋</p>
                 <p className="text-sm">Start a conversation!</p>
-                <p className="text-xs mt-1">Ask me about orders, products, or anything!</p>
+                <p className="text-xs mt-1">
+                  Ask me about orders, products, or anything!
+                </p>
               </div>
             )}
 
             {messages.map((msg, index) => (
               <div
                 key={index}
-                className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
               >
                 <div
                   className={`max-w-[80%] px-4 py-2 rounded-2xl text-sm ${
-                    msg.sender === 'user'
-                      ? 'bg-gray-900 text-white'
-                      : 'bg-white text-gray-800 border border-gray-200'
+                    msg.sender === "user"
+                      ? "bg-gray-900 text-white"
+                      : "bg-white text-gray-800 border border-gray-200"
                   }`}
                 >
                   <p className="whitespace-pre-wrap">{msg.message}</p>
                   <p
                     className={`text-xs mt-1 ${
-                      msg.sender === 'user' ? 'text-gray-300' : 'text-gray-400'
+                      msg.sender === "user" ? "text-gray-300" : "text-gray-400"
                     }`}
                   >
-                    {msg.timestamp.toLocaleTimeString('en-IN', {
-                      hour: '2-digit',
-                      minute: '2-digit',
+                    {msg.timestamp.toLocaleTimeString("en-IN", {
+                      hour: "2-digit",
+                      minute: "2-digit",
                     })}
                   </p>
                 </div>
@@ -174,8 +184,14 @@ function ChatWidget() {
                 <div className="bg-white border border-gray-200 px-4 py-3 rounded-2xl">
                   <div className="flex gap-1">
                     <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                    <div
+                      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                      style={{ animationDelay: "0.2s" }}
+                    ></div>
+                    <div
+                      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                      style={{ animationDelay: "0.4s" }}
+                    ></div>
                   </div>
                 </div>
               </div>
@@ -212,7 +228,7 @@ function ChatWidget() {
         onClick={() => setIsOpen(!isOpen)}
         className="fixed bottom-6 right-6 w-14 h-14 bg-gray-900 text-white rounded-full shadow-2xl hover:bg-gray-700 transition flex items-center justify-center text-2xl z-50"
       >
-        {isOpen ? '×' : '💬'}
+        {isOpen ? "×" : "💬"}
       </button>
     </>
   );
