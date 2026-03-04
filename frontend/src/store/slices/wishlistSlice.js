@@ -54,32 +54,32 @@ const wishlistSlice = createSlice({
       state.successMessage = null;
     },
   },
-  extraReducers: (builder) => {
-    builder
-      // Fetch wishlist
-      .addCase(fetchWishlist.fulfilled, (state, action) => {
-        state.products = action.payload.products || [];
-      })
-      // Add to wishlist
-      .addCase(addToWishlist.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(addToWishlist.fulfilled, (state, action) => {
-        state.loading = false;
-        state.products = action.payload.products || [];
-        state.successMessage = 'Added to wishlist!';
-      })
-      .addCase(addToWishlist.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-      // Remove from wishlist
-      .addCase(removeFromWishlist.fulfilled, (state, action) => {
-        state.products = action.payload.products || [];
-        state.successMessage = 'Removed from wishlist!';
-      });
-  },
+extraReducers: (builder) => {
+  builder
+    // Fetch wishlist
+    .addCase(fetchWishlist.fulfilled, (state, action) => {
+      state.products = action.payload.products || [];  //  Get products from nested object
+    })
+    // Add to wishlist
+    .addCase(addToWishlist.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    })
+    .addCase(addToWishlist.fulfilled, (state, action) => {
+      state.loading = false;
+      state.products = action.payload.products || [];  //  Get products from nested object
+      state.successMessage = 'Added to wishlist!';
+    })
+    .addCase(addToWishlist.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    })
+    // Remove from wishlist
+    .addCase(removeFromWishlist.fulfilled, (state, action) => {
+      state.products = action.payload.products || [];  //  Get products from nested object
+      state.successMessage = 'Removed from wishlist!';
+    });
+},
 });
 
 export const { clearMessages } = wishlistSlice.actions;
